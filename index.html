@@ -38,6 +38,7 @@
             padding: 10px;
             border-bottom: 1px solid #ccc;
             transition: background-color 0.2s ease;
+            cursor: pointer;
         }
 
         .lista-reproduccion li:hover {
@@ -48,26 +49,9 @@
             border-bottom: none;
         }
 
-        .lista-reproduccion a {
-            text-decoration: none;
-            color: #337ab7;
-            cursor: pointer;
-        }
-
-        .lista-reproduccion a:hover {
-            color: #23527c;
-        }
-
-        .titulo {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .subtitulo {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
+        .lista-reproduccion .seleccionado {
+            background-color: #337ab7;
+            color: #fff;
         }
     </style>
 </head>
@@ -77,9 +61,9 @@
         <video id="video-player" class="reproductor" controls></video>
         <h2 class="subtitulo">Lista de reproducción</h2>
         <ul class="lista-reproduccion">
-            <li><span class="canal" data-url-hls="https://bmv3.fubohd.com/winsportsplus/mono.m3u8?token=861f03e9ac66279e7867487b865a0478f10820b5-bf-1741019181-1740983181">Video 1</span></li>
-            <li><span class="canal" data-url-hls="https://example.com/playlist2.m3u8">Video 2</span></li>
-            <li><span class="canal" data-url-hls="https://example.com/playlist3.m3u8">Video 3</span></li>
+            <li data-url-hls="https://example.com/playlist1.m3u8">Video 1</li>
+            <li data-url-hls="https://example.com/playlist2.m3u8">Video 2</li>
+            <li data-url-hls="https://example.com/playlist3.m3u8">Video 3</li>
         </ul>
     </div>
 
@@ -89,12 +73,20 @@
         const listaReproduccion = document.querySelector('.lista-reproduccion');
 
         let hls;
+        let canalSeleccionado = null;
 
         listaReproduccion.addEventListener('click', (e) => {
-            if (e.target.classList.contains('canal')) {
+            if (e.target.tagName === 'LI') {
                 const urlHls = e.target.getAttribute('data-url-hls');
 
                 if (urlHls) {
+                    if (canalSeleccionado) {
+                        canalSeleccionado.classList.remove('seleccionado');
+                    }
+
+                    e.target.classList.add('seleccionado');
+                    canalSeleccionado = e.target;
+
                     if (hls) {
                         hls.destroy();
                     }
