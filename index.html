@@ -8,11 +8,13 @@
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
         }
 
         .container {
-            max-width: 800px;
-            margin: 40px auto;
+            max-width: 100%;
+            margin: 0 auto;
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 10px;
@@ -22,7 +24,7 @@
 
         .reproductor {
             width: 100%;
-            height: 480px;
+            height: 200px;
             border: 1px solid #ccc;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -32,6 +34,8 @@
             list-style: none;
             padding: 0;
             margin: 0;
+            overflow-y: auto;
+            max-height: 200px;
         }
 
         .lista-reproduccion li {
@@ -52,6 +56,20 @@
         .lista-reproduccion .seleccionado {
             background-color: #337ab7;
             color: #fff;
+        }
+
+        @media only screen and (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .reproductor {
+                height: 150px;
+            }
+
+            .lista-reproduccion {
+                max-height: 150px;
+            }
         }
     </style>
 </head>
