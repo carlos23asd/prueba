@@ -2,25 +2,433 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bienvenido!</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: linear-gradient(135deg, #f093fb, #f5576c);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        color: #fff;
-      }
-      h1 {
-        font-size: 2rem;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>¡Bienvenido a index2.html!</h1>
-  </body>
-</html>
+  <base href>
+  <meta name="referrer" content="no-referrer">
+  <title>Reproductor de Video con HLS</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #1a1a1a;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
 
+    .main-content {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      max-width: 1200px;
+      /* Adjust as needed */
+      margin: 0 auto;
+    }
+
+    .video-section {
+      flex: 2;
+      /* Takes up more space */
+    }
+
+    .video-container {
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      margin-bottom: 20px;
+      /* Space below the video player */
+    }
+
+    video {
+      width: 100%;
+      height: auto;
+    }
+
+    .controls {
+      padding: 15px;
+      background: #333;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    button {
+      background: #4CAF50;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    select {
+      padding: 6px;
+      border-radius: 4px;
+      background: #444;
+      color: white;
+      border: 1px solid #666;
+    }
+
+    .playlist-container {
+      flex: 1;
+      /* Takes up less space */
+      max-width: 300px;
+      /* Adjust as needed */
+      background: #333;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.9em;
+    }
+
+    .playlist-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+      padding: 5px;
+      background: #444;
+      border-radius: 4px;
+    }
+
+    .playlist-name {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    /* Stream status styles */
+    .stream-status {
+      margin-top: 20px;
+      background: #333;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #444;
+      border-radius: 4px;
+    }
+
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .status-good {
+      background: #4CAF50;
+    }
+
+    .status-slow {
+      background: #FFA726;
+    }
+
+    .status-error {
+      background: #f44336;
+    }
+
+    .status-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .status-name {
+      font-weight: bold;
+    }
+
+    .status-message {
+      font-size: 0.9em;
+      color: #aaa;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main-content">
+    <div class="video-section">
+      <div class="video-container" id="videoContainer">
+        <video id="video" controls></video>
+        <div class="controls">
+          <button id="playPause">Play/Pause</button>
+          <select id="quality">
+            <option value>Calidad Auto</option>
+          </select>
+          <button id="fullscreen">Pantalla Completa</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="playlistContainer" class="playlist-container">
+      <h3>Lista de Reproductores</h3>
+      <div id="playlistItems"></div>
+    </div>
+  </div>
+
+  <script>
+    let videoUrls = [{
+      name: 'Stream Principal',
+      url: 'https://stream.gia.tv/giatv/giatv-Gary2CanalGary2Canal/Gary2CanalGary2Canal/chunks.m3u8'
+    }, {
+      name: 'Win+',
+      url: 'https://jf1.naqsheala.com:999/hls/winsportsplus.m3u8?md5=RQ8sFhlxBdKhiZCPzg52HA&expires=1740789160'
+    }];
+    videoUrls.push({
+      name: 'ESPN',
+      url: 'http://107.150.48.178/auth/mGgdar6bjjim6AjlAhnvfF4StdgQNtjlcod1dDWMPozfqAD2b5EVKkK_WuDwDRvqVoatDwRZNGhomFJTlqU6TkNuz5a8wkLeHxVA6IbZwXdwEd0li53EQmwWNqPCV01XggKrWEx13CAiHji7H2Sw2LsSEDUwYIdcv3s7PrveHj8wsGpd3yHGURtmy8DOv1qQOli1ZYE6gZ8qZfhePU_4n2WwFcHwKsTreEHtcThCHoIuFTjlBYQ7k5pNl1NQm9jgG8pS1DY0DRyckG2XN0UKh-YSsrKirI2nujFxr1spbDRRy48uycqWqIvk2Q2mGiUAycRkRypmN3CLgelHAJ0Az9m4WqftemZ_46YMiAOvl30NmHkDBhyKtzPLM-5HFLa94qoGSHWZXr23VLo-jgH6hOT3WruSEuobg0hC_fdiHeKXRIztyQPNpQuIuZSUQaWmmyV4sGb256RcHu8WUM_2pnmKaODjhhwmzXwWA0XfPNCgk8RRQpJqpHdd5rURUwgv1pX2AV3u2b6Auj6SCM_02Xf7XslaXw50W6_f9Ra9jSJOA8GenRuvDZN5vvPCFUgYHsrePvloRfjUqfG5EyN5AwaRbEA76npXW47sNfuVYN3G0CeMPig8AiujAfGbKaa2_bg2ah7Xcpv-iMkmpusxGQ'
+    }, {
+      name: 'ESPN 2',
+      url: 'https://dglvz29s.fubohd.com/espn2/tracks-v1a1/mono.m3u8?token=922d4289e5897536ea63e8451e976b26f6b5a614-09-1737687500-1737651500'
+    }, {
+      name: 'ESPN 3',
+      url: 'https://jf3.naqsheala.com:999/hls/capespn3arg.m3u8?md5=wJxFAfY8p5Pxz9f443MLsg&expires=1740789033'
+    });
+    videoUrls.push({
+      name: 'ESPN 4',
+      url: 'https://d2hpc3rszq.fubohd.com/espn4/tracks-v1a1/mono.m3u8?token=7e596cd774ad7a063c15252d13b324b9703856a2-e8-1737687648-1737651648'
+    }, {
+      name: 'ESPN EXTRA',
+      url: 'https://am91cm5leq.fubohd.com/espn5/tracks-v1a1/mono.m3u8?token=c5bd09a2d5d0b3c24639d45110346b82bec20bc3-a7-1737687690-1737651690'
+    }, {
+      name: 'ESPN Premium',
+      url: 'https://cale.pricesaskeloadsc.com/espn1/tracks-v1a1/mono.m3u8?token=269839fde5dc06a07156029ce04a546b6e49241a-bf-1736650792-1736614792'
+    }, {
+      name: 'Directv',
+      url: 'https://jf2.naqsheala.com:999/hls/directvlivehd.m3u8?md5=eoXNlL7JkQkOhsRFB1LluQ&expires=1740788806'
+    });
+    videoUrls.push({
+      name: 'Solo eventos',
+      url: 'https://jf2.naqsheala.com:999/hls/directsp.m3u8?md5=_eQWBzjGyConBjOd433B3w&expires=1737660255'
+    });
+
+    let currentHls = null;
+    let streamStatuses = {};
+
+    function initStreamGuard() {
+      const originalFetch = window.fetch;
+      window.fetch = async function(url, options = {}) {
+        options.credentials = 'omit';
+        options.headers = {
+          ...options.headers,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Referer': '',
+          'Origin': null,
+          'Authorization': `Bearer ${localStorage.getItem('supabase.auth.token')}`
+        };
+        return originalFetch(url, options);
+      };
+    }
+
+    function playUrl(url) {
+      if (currentHls) {
+        currentHls.destroy();
+      }
+      const video = document.getElementById('video');
+      const qualitySelect = document.getElementById('quality');
+      qualitySelect.innerHTML = '<option value="">Calidad Auto</option>';
+
+      if (Hls.isSupported()) {
+        const config = {
+          enableWorker: true,
+          maxBufferLength: 60,
+          maxMaxBufferLength: 600,
+          maxBufferSize: 600000000,
+          maxBufferHole: 0.5,
+          highBufferWatchdogPeriod: 2,
+          abrEwmaDefaultEstimate: 500000,
+          abrBandWidthFactor: 0.95,
+          abrBandWidthUpFactor: 0.7,
+          abrMaxWithRealBitrate: true,
+          maxStarvationDelay: 4,
+          maxLoadingDelay: 4,
+          lowLatencyMode: false,
+          backBufferLength: 90
+        };
+
+        currentHls = new Hls(config);
+        currentHls.loadSource(url);
+        currentHls.attachMedia(video);
+
+        currentHls.on(Hls.Events.ERROR, function(event, data) {
+          const streamIndex = videoUrls.findIndex(item => item.url === url);
+          if (streamIndex !== -1) {
+            streamStatuses[url] = {
+              status: 'error',
+              message: `Error: ${data.type} - ${data.details}`
+            };
+            updateStreamStatus();
+          }
+        });
+
+        currentHls.on(Hls.Events.FRAG_LOADED, function(event, data) {
+          const loadTime = data.stats.loading.end - data.stats.loading.start;
+          const streamIndex = videoUrls.findIndex(item => item.url === url);
+          if (streamIndex !== -1) {
+            if (loadTime > 2000) {
+              streamStatuses[url] = {
+                status: 'slow',
+                message: 'Reproducción lenta - Alta latencia'
+              };
+            } else {
+              streamStatuses[url] = {
+                status: 'good',
+                message: 'Reproducción estable'
+              };
+            }
+            updateStreamStatus();
+          }
+        });
+
+        currentHls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
+          const qualities = data.levels.map((level, index) => ({
+            index: index,
+            resolution: `${level.width}x${level.height}`,
+            bitrate: level.bitrate
+          }));
+          qualities.forEach(quality => {
+            const option = document.createElement('option');
+            option.value = quality.index;
+            option.text = `${quality.resolution} (${Math.round(quality.bitrate / 1000)} kbps)`;
+            qualitySelect.appendChild(option);
+          });
+          video.play();
+        });
+      }
+    }
+
+    function updatePlaylist() {
+      const container = document.getElementById('playlistItems');
+      container.innerHTML = '';
+      videoUrls.forEach((item, index) => {
+        const playlistItem = document.createElement('div');
+        playlistItem.className = 'playlist-item';
+
+        const playButton = document.createElement('button');
+        playButton.textContent = 'Reproducir';
+        playButton.onclick = () => playUrl(item.url);
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'playlist-name';
+        nameSpan.textContent = item.name;
+
+        playlistItem.appendChild(playButton);
+        playlistItem.appendChild(nameSpan);
+        container.appendChild(playlistItem);
+      });
+      updateStreamStatus();
+    }
+
+    function updateStreamStatus() {
+      const container = document.getElementById('playlistContainer');
+      let statusContainer = document.querySelector('.stream-status');
+      if (!statusContainer) {
+        statusContainer = document.createElement('div');
+        statusContainer.className = 'stream-status';
+        statusContainer.innerHTML = '<h3>Estado de Streams</h3>';
+        container.appendChild(statusContainer);
+      }
+
+      const statusContent = document.createElement('div');
+      videoUrls.forEach(item => {
+        const status = streamStatuses[item.url] || {
+          status: 'unknown',
+          message: 'No reproducido aún'
+        };
+
+        const statusItem = document.createElement('div');
+        statusItem.className = 'status-item';
+
+        const indicator = document.createElement('div');
+        indicator.className = `status-indicator status-${status.status}`;
+
+        const details = document.createElement('div');
+        details.className = 'status-details';
+
+        const name = document.createElement('div');
+        name.className = 'status-name';
+        name.textContent = item.name;
+
+        const message = document.createElement('div');
+        message.className = 'status-message';
+        message.textContent = status.message;
+
+        details.appendChild(name);
+        details.appendChild(message);
+        statusItem.appendChild(indicator);
+        statusItem.appendChild(details);
+        statusContent.appendChild(statusItem);
+      });
+
+      statusContainer.innerHTML = '<h3>Estado de Streams</h3>';
+      statusContainer.appendChild(statusContent);
+    }
+
+    function initializeVideo() {
+      const video = document.getElementById('video');
+      const playPauseBtn = document.getElementById('playPause');
+      const qualitySelect = document.getElementById('quality');
+      const fullscreenBtn = document.getElementById('fullscreen');
+
+      playUrl(videoUrls[0].url);
+
+      playPauseBtn.addEventListener('click', function() {
+        if (video.paused) {
+          video.play();
+        } else {
+          video.pause();
+        }
+      });
+
+      fullscreenBtn.addEventListener('click', function() {
+        if (!document.fullscreenElement) {
+          if (video.requestFullscreen) {
+            video.requestFullscreen();
+          } else if (video.webkitRequestFullscreen) {
+            video.webkitRequestFullscreen();
+          }
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          }
+        }
+      });
+
+      video.addEventListener('play', () => {
+        playPauseBtn.textContent = 'Pause';
+      });
+
+      video.addEventListener('pause', () => {
+        playPauseBtn.textContent = 'Play';
+      });
+
+      qualitySelect.addEventListener('change', function() {
+        if (currentHls) {
+          if (this.value === '') {
+            currentHls.currentLevel = -1;
+          } else {
+            currentHls.currentLevel = Number(this.value);
+          }
+        }
+      });
+    }
+
+    window.addEventListener('load', () => {
+      initStreamGuard();
+      initializeVideo();
+      updatePlaylist();
+    });
+  </script>
+</body>
+
+</html>
