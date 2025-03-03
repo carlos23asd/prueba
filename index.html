@@ -3,25 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor de Video HLnS</title>
+    <title>Reproductor de Video HLS</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
         }
 
         .container {
-            max-width: 640px;
+            max-width: 800px;
             margin: 40px auto;
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
         }
 
-        video {
+        .reproductor {
             width: 100%;
             height: 480px;
             border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         .lista-reproduccion {
@@ -33,6 +37,11 @@
         .lista-reproduccion li {
             padding: 10px;
             border-bottom: 1px solid #ccc;
+            transition: background-color 0.2s ease;
+        }
+
+        .lista-reproduccion li:hover {
+            background-color: #f5f5f5;
         }
 
         .lista-reproduccion li:last-child {
@@ -48,15 +57,27 @@
         .lista-reproduccion a:hover {
             color: #23527c;
         }
+
+        .titulo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .subtitulo {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Reproductor de Video HLS</h1>
-        <video id="video-player" controls></video>
-        <h2>Lista de reproducción</h2>
+        <h1 class="titulo">Reproductor de Video HLS</h1>
+        <video id="video-player" class="reproductor" controls></video>
+        <h2 class="subtitulo">Lista de reproducción</h2>
         <ul class="lista-reproduccion">
-            <li><span class="canal" data-url-hls="https://example.com/playlist1.m3u8">Video 1</span></li>
+            <li><span class="canal" data-url-hls="https://bmv3.fubohd.com/winsportsplus/mono.m3u8?token=861f03e9ac66279e7867487b865a0478f10820b5-bf-1741019181-1740983181">Video 1</span></li>
             <li><span class="canal" data-url-hls="https://example.com/playlist2.m3u8">Video 2</span></li>
             <li><span class="canal" data-url-hls="https://example.com/playlist3.m3u8">Video 3</span></li>
         </ul>
