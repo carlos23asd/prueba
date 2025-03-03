@@ -1,7 +1,6 @@
-<html lang="es">
-<head>
+<html>
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inicio de Sesión</title>
     <style>
       body {
@@ -104,6 +103,94 @@
           window.location.href = 'index2.html';
         }
       });
+
+  function logMessage(message, isSuccess) {
+    const entry = document.createElement('div');
+    entry.className = `log-entry ${isSuccess ? 'log-success' : 'log-error'}`;
+    entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+    botLog.appendChild(entry);
+    botLog.scrollTop = botLog.scrollHeight;
+  }
+  function setupDevToolsDetection() {
+    // Método 1: Detectar cambios de tamaño que pueden indicar apertura de devtools
+    let widthThreshold = window.outerWidth - window.innerWidth > 160;
+    let heightThreshold = window.outerHeight - window.innerHeight > 160;
+    let initialDevToolsOpen = widthThreshold || heightThreshold;
+    
+    // Método 2: Usar console.clear para detectar sobreescritura
+    let consoleCheck = false;
+    const originalConsole = {
+      clear: console.clear,
+      log: console.log,
+      info: console.info,
+      warn: console.warn,
+      error: console.error
+    };
+    
+    // Insertar debugger statement periódicamente cuando se detectan herramientas de desarrollo
+    setInterval(function() {
+      // Revisar si las dimensiones indican que devtools está abierto
+      widthThreshold = window.outerWidth - window.innerWidth > 160;
+      heightThreshold = window.outerHeight - window.innerHeight > 160;
+      let devToolsOpen = widthThreshold || heightThreshold;
+      
+      // Método 3: Revisar si console.log fue modificado
+      if (console.log.toString().indexOf('native code') === -1) {
+        console = originalConsole; // Restaurar
+        devToolsOpen = true;
+        consoleCheck = true;
+      }
+      
+      // Si devtools está abierto, interrumpir con debugger
+      if (devToolsOpen || consoleCheck) {
+        // Insertar múltiples statements de debugger en diferentes maneras para dificultar su evasión
+        (function() {
+          try {
+            // Primer debugger ofuscado
+            var x = document.createElement('div');
+            x.innerHTML = '';
+            x.id = 'z' + Math.random().toString(36).substring(7);
+            x.style.display = 'none';
+            document.body.appendChild(x);
+            
+            // Insertar el debugger de manera difícil de detectar
+            setTimeout(function() {
+              document.getElementById(x.id).remove();
+              if (devToolsOpen || consoleCheck) {
+                debugger; // Primera pausa
+                setTimeout(function() {
+                  debugger; // Segunda pausa, en caso de que la primera sea evitada
+                }, 100);
+              }
+            }, 100);
+          } catch (e) {}
+        })();
+      }
+    }, 1000);
+    
+    // Otro método: detectar Firebug o devtools a través de métodos específicos
+    setInterval(function() {
+      const devtoolsOpen = /./;
+      devtoolsOpen.toString = function() {
+        consoleCheck = true;
+        return '';
+      };
+      console.log('%c', devtoolsOpen);
+      console.clear();
+    }, 2000);
+    
+    // Método 4: Detector basado en tiempos de ejecución
+    let start = performance.now();
+    debugger;
+    let end = performance.now();
+    
+    if (end - start > 100) { // Si toma más de 100ms, devtools probablemente está abierto
+      consoleCheck = true;
+    }
+  }
+
+  setupDevToolsDetection();
+
     </script>
   </body>
 </html>
